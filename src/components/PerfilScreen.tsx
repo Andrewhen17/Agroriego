@@ -51,252 +51,252 @@ export function PerfilScreen({ userRole }: PerfilScreenProps) {
   ];
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl mb-2">Perfil y Cuenta</h1>
-          <p className="text-sm md:text-base text-gray-600">Administra tu información personal y configuración de cuenta</p>
-        </div>
+      <div className="p-3 sm:p-4 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2 font-semibold">Perfil y Cuenta</h1>
+            <p className="text-sm md:text-base text-gray-600">Administra tu información personal y configuración de cuenta</p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Información del Usuario */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6 rounded-2xl shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center">
-                    <UserCircle className="w-10 h-10 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl">{formData.nombre}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge className={
-                        userRole === 'admin' 
-                          ? 'bg-purple-100 text-purple-700' 
-                          : 'bg-blue-100 text-blue-700'
-                      }>
-                        {userRole === 'admin' ? (
-                          <><Shield className="w-3 h-3 mr-1" /> Administrador</>
-                        ) : (
-                          <><Eye className="w-3 h-3 mr-1" /> Usuario</>
-                        )}
-                      </Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Información del Usuario */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="p-4 sm:p-6 rounded-2xl shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center shrink-0">
+                      <UserCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-lg sm:text-2xl font-medium truncate">{formData.nombre}</h2>
+                      <div className="flex items-center mt-1">
+                        <Badge className={
+                          userRole === 'admin'
+                              ? 'bg-purple-100 text-purple-700 whitespace-nowrap'
+                              : 'bg-blue-100 text-blue-700 whitespace-nowrap'
+                        }>
+                          {userRole === 'admin' ? (
+                              <><Shield className="w-3 h-3 mr-1" /> Administrador</>
+                          ) : (
+                              <><Eye className="w-3 h-3 mr-1" /> Usuario</>
+                          )}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
+                  <Button
+                      onClick={() => setIsEditing(!isEditing)}
+                      variant={isEditing ? 'outline' : 'default'}
+                      className="rounded-xl w-full sm:w-auto"
+                  >
+                    {isEditing ? 'Cancelar' : 'Editar Perfil'}
+                  </Button>
                 </div>
-                <Button
-                  onClick={() => setIsEditing(!isEditing)}
-                  variant={isEditing ? 'outline' : 'default'}
-                  className="rounded-xl"
-                >
-                  {isEditing ? 'Cancelar' : 'Editar Perfil'}
-                </Button>
-              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nombre">Nombre Completo</Label>
-                    <div className="relative">
-                      <UserCircle className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nombre">Nombre Completo</Label>
+                      <div className="relative">
+                        <UserCircle className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Input
+                            id="nombre"
+                            value={formData.nombre}
+                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                            className="pl-10 rounded-xl"
+                            disabled={!isEditing}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="pl-10 rounded-xl"
+                            disabled={!isEditing}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="telefono">Teléfono</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Input
+                            id="telefono"
+                            type="tel"
+                            value={formData.telefono}
+                            onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                            className="pl-10 rounded-xl"
+                            disabled={!isEditing}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cargo">Cargo</Label>
                       <Input
-                        id="nombre"
-                        value={formData.nombre}
-                        onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                        className="pl-10 rounded-xl"
-                        disabled={!isEditing}
+                          id="cargo"
+                          value={formData.cargo}
+                          onChange={(e) => setFormData({ ...formData, cargo: e.target.value })}
+                          className="rounded-xl"
+                          disabled={!isEditing}
                       />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="ubicacion">Ubicación</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Input
+                            id="ubicacion"
+                            value={formData.ubicacion}
+                            onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
+                            className="pl-10 rounded-xl"
+                            disabled={!isEditing}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="pl-10 rounded-xl"
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
+                  {isEditing && (
+                      <Button
+                          type="submit"
+                          className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl mt-4"
+                      >
+                        <Save className="w-5 h-5 mr-2" />
+                        Guardar Cambios
+                      </Button>
+                  )}
+                </form>
+              </Card>
 
+              {/* Cambiar Contraseña */}
+              <Card className="p-4 sm:p-6 rounded-2xl shadow-sm">
+                <h2 className="text-lg sm:text-xl mb-4 font-medium">Cambiar Contraseña</h2>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="telefono">Teléfono</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="telefono"
-                        type="tel"
-                        value={formData.telefono}
-                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                        className="pl-10 rounded-xl"
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cargo">Cargo</Label>
+                    <Label htmlFor="actual">Contraseña Actual</Label>
                     <Input
-                      id="cargo"
-                      value={formData.cargo}
-                      onChange={(e) => setFormData({ ...formData, cargo: e.target.value })}
-                      className="rounded-xl"
-                      disabled={!isEditing}
+                        id="actual"
+                        type="password"
+                        value={passwordData.actual}
+                        onChange={(e) => setPasswordData({ ...passwordData, actual: e.target.value })}
+                        className="rounded-xl"
+                        required
                     />
                   </div>
 
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="ubicacion">Ubicación</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="ubicacion"
-                        value={formData.ubicacion}
-                        onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
-                        className="pl-10 rounded-xl"
-                        disabled={!isEditing}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nueva">Nueva Contraseña</Label>
+                    <Input
+                        id="nueva"
+                        type="password"
+                        value={passwordData.nueva}
+                        onChange={(e) => setPasswordData({ ...passwordData, nueva: e.target.value })}
+                        className="rounded-xl"
+                        required
+                    />
                   </div>
-                </div>
 
-                {isEditing && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmar">Confirmar Nueva Contraseña</Label>
+                    <Input
+                        id="confirmar"
+                        type="password"
+                        value={passwordData.confirmar}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmar: e.target.value })}
+                        className="rounded-xl"
+                        required
+                    />
+                  </div>
+
                   <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl"
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl"
                   >
-                    <Save className="w-5 h-5 mr-2" />
-                    Guardar Cambios
+                    Actualizar Contraseña
                   </Button>
-                )}
-              </form>
-            </Card>
+                </form>
+              </Card>
+            </div>
 
-            {/* Cambiar Contraseña */}
-            <Card className="p-6 rounded-2xl shadow-sm">
-              <h2 className="text-xl mb-4">Cambiar Contraseña</h2>
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="actual">Contraseña Actual</Label>
-                  <Input
-                    id="actual"
-                    type="password"
-                    value={passwordData.actual}
-                    onChange={(e) => setPasswordData({ ...passwordData, actual: e.target.value })}
-                    className="rounded-xl"
-                    required
-                  />
+            {/* Sidebar / Actividad Reciente */}
+            <div className="space-y-6">
+              <Card className="p-4 sm:p-6 rounded-2xl shadow-sm">
+                <h2 className="text-lg mb-4 font-medium">Permisos del Rol</h2>
+                <div className="space-y-3">
+                  {userRole === 'admin' ? (
+                      <>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-green-500 rounded-full" />
+                          <span>Editar configuraciones</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-green-500 rounded-full" />
+                          <span>Gestionar usuarios</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-green-500 rounded-full" />
+                          <span>Crear y editar predios</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-green-500 rounded-full" />
+                          <span>Configurar áreas de riego</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-green-500 rounded-full" />
+                          <span>Exportar reportes</span>
+                        </div>
+                      </>
+                  ) : (
+                      <>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-blue-500 rounded-full" />
+                          <span>Visualizar dashboards</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-blue-500 rounded-full" />
+                          <span>Ver predios y áreas</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-blue-500 rounded-full" />
+                          <span>Ver reportes</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-gray-400 rounded-full" />
+                          <span className="text-gray-500">Editar configuraciones</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 shrink-0 bg-gray-400 rounded-full" />
+                          <span className="text-gray-500">Gestionar usuarios</span>
+                        </div>
+                      </>
+                  )}
                 </div>
+              </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="nueva">Nueva Contraseña</Label>
-                  <Input
-                    id="nueva"
-                    type="password"
-                    value={passwordData.nueva}
-                    onChange={(e) => setPasswordData({ ...passwordData, nueva: e.target.value })}
-                    className="rounded-xl"
-                    required
-                  />
+              <Card className="p-4 sm:p-6 rounded-2xl shadow-sm">
+                <h2 className="text-lg mb-4 font-medium">Actividad Reciente</h2>
+                <div className="space-y-3">
+                  {actividadReciente.map((actividad, index) => (
+                      <div key={index} className="pb-3 border-b last:border-0 last:pb-0">
+                        <p className="text-sm font-medium">{actividad.accion}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">{actividad.detalle}</p>
+                        <p className="text-xs text-gray-400 mt-1">{actividad.fecha}</p>
+                      </div>
+                  ))}
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmar">Confirmar Nueva Contraseña</Label>
-                  <Input
-                    id="confirmar"
-                    type="password"
-                    value={passwordData.confirmar}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmar: e.target.value })}
-                    className="rounded-xl"
-                    required
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl"
-                >
-                  Actualizar Contraseña
-                </Button>
-              </form>
-            </Card>
-          </div>
-
-          {/* Actividad Reciente */}
-          <div className="space-y-6">
-            <Card className="p-6 rounded-2xl shadow-sm">
-              <h2 className="text-lg mb-4">Permisos del Rol</h2>
-              <div className="space-y-3">
-                {userRole === 'admin' ? (
-                  <>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span>Editar configuraciones</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span>Gestionar usuarios</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span>Crear y editar predios</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span>Configurar áreas de riego</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span>Exportar reportes</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span>Visualizar dashboards</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span>Ver predios y áreas</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span>Ver reportes</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
-                      <span className="text-gray-500">Editar configuraciones</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
-                      <span className="text-gray-500">Gestionar usuarios</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-
-            <Card className="p-6 rounded-2xl shadow-sm">
-              <h2 className="text-lg mb-4">Actividad Reciente</h2>
-              <div className="space-y-3">
-                {actividadReciente.map((actividad, index) => (
-                  <div key={index} className="pb-3 border-b last:border-0 last:pb-0">
-                    <p className="text-sm font-medium">{actividad.accion}</p>
-                    <p className="text-xs text-gray-600">{actividad.detalle}</p>
-                    <p className="text-xs text-gray-500 mt-1">{actividad.fecha}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }
