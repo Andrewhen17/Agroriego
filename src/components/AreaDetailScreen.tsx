@@ -216,7 +216,7 @@ export function AreaDetailScreen({ area, onNavigate }: AreaDetailScreenProps) {
         {/* Tabs con Gráficas */}
         <Card className="p-6 rounded-2xl shadow-sm">
           <Tabs defaultValue="humedad" className="w-full">
-            <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-6 bg-gray-100 p-1 rounded-xl">
+            <TabsList className="flex flex-wrap mb-6 bg-gray-100 p-1 rounded-xl h-auto gap-1">
               {sensors.map((sensor) => (
                 <TabsTrigger 
                   key={sensor.id} 
