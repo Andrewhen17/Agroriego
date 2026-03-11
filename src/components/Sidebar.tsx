@@ -56,7 +56,6 @@ export function Sidebar({ currentView, onNavigate, userRole, onLogout, isOpen, o
               onClick={onClose}
               className="lg:hidden text-white hover:bg-blue-700"
             >
-              <X className="h-5 w-5" />
             </Button>
           )}
         </div>
