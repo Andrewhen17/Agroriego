@@ -24,148 +24,119 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  if (showRecover) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-6 md:p-8 rounded-2xl shadow-xl">
-          <div className="text-center mb-6 md:mb-8">
-            <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Droplet className="w-8 h-8 md:w-9 md:h-9 text-white" />
-            </div>
-            <h1 className="text-xl md:text-2xl mb-2">Recuperar Contraseña</h1>
-            <p className="text-sm md:text-base text-gray-600">
-              Ingresa tu correo electrónico para recuperar tu contraseña
-            </p>
+  return (
+    // CONTENEDOR MAESTRO: Centrado absoluto
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
+      
+      {/* TARJETA PRINCIPAL (Envoltorio exterior) */}
+      <Card className="mx-auto w-full max-w-md sm:p-10 rounded-[2rem] shadow-2xl bg-white backdrop-blur-sm border-none">
+        
+        {/* Cabecera: Logo y Título */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Droplet className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight">
+            AgroRiego IoT
+          </h1>
+          <p className="text-gray-500 text-sm sm:text-base">
+            Gestión inteligente de cultivos
+          </p>
+        </div>
 
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowRecover(false); }}>
+        {/* ESTA ES LA TARJETA INTERNA: 
+            En móvil es invisible, pero en pantallas 'sm' en adelante 
+            aparece como un bloque envuelto. 
+        */}
+        <div className="w-full my-8 p-8 sm:border sm:border-gray-100 sm:rounded-3xl sm:shadow-sm">
+
+          
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="recover-email">Correo Electrónico</Label>
-              <div className="relative">
+              <Label htmlFor="email">Correo Electrónico</Label>
+              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
                 <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <Input
-                  id="recover-email"
+                  id="email"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="pl-10 rounded-xl"
+                  className="pl-10 rounded-xl bg-gray-50/50"
+                  required
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl">
-              Enviar Enlace de Recuperación
-            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
+                <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="pl-10 rounded-xl bg-gray-50/50"
+                  required
+                />
+              </div>
+            </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setShowRecover(false)}
+            <div className="space-y-2">
+              <Label htmlFor="predio">ID del Predio</Label>
+              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
+                <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <Input
+                  id="predio"
+                  type="text"
+                  value={predioId}
+                  onChange={(e) => setPredioId(e.target.value)}
+                  placeholder="P-001"
+                  className="pl-10 rounded-xl bg-gray-50/50"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Rol de Usuario</Label>
+              <Select value={role} onValueChange={(value) => setRole(value as 'admin' | 'user')}>
+                <SelectTrigger className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3 rounded-xl bg-gray-50/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="user">Usuario (Visualización)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl shadow-md font-bold text-white transition-all hover:scale-[1.01]"
             >
-              Volver al Inicio de Sesión
+              Iniciar Sesión
             </Button>
           </form>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-6 md:p-8 rounded-2xl shadow-xl">
-        <div className="text-center mb-6 md:mb-8">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Droplet className="w-8 h-8 md:w-9 md:h-9 text-white" />
-          </div>
-          <h1 className="text-xl md:text-2xl mb-2">AgroRiego IoT</h1>
-          <p className="text-sm md:text-base text-gray-600">
-            Sistema de Riego Automatizado
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                className="pl-10 rounded-xl"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="pl-10 rounded-xl"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="predio">ID del Predio</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <Input
-                id="predio"
-                type="text"
-                value={predioId}
-                onChange={(e) => setPredioId(e.target.value)}
-                placeholder="P-001"
-                className="pl-10 rounded-xl"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Rol de Usuario</Label>
-            <Select value={role} onValueChange={(value) => setRole(value as 'admin' | 'user')}>
-              <SelectTrigger className="rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="user">Usuario (Solo Visualización)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl"
-          >
-            Iniciar Sesión
-          </Button>
 
           <button
             type="button"
             onClick={() => setShowRecover(true)}
-            className="w-full text-sm text-blue-600 hover:text-blue-700 transition-colors"
+            className="w-full mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
           >
             ¿Olvidaste tu contraseña?
           </button>
-        </form>
+        </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">
-            Actualización cada 10 minutos • Soporte 24/7
+        {/* Footer de la tarjeta */}
+        <div className="mt-12 pb-6 text-center">
+          <p className="text-xs text-gray-400">
+            Actualización cada 10 min • Soporte 24/7
           </p>
         </div>
+
       </Card>
     </div>
   );
