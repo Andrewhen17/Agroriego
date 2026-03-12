@@ -242,7 +242,7 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
                   <Button
                     onClick={() => handleEdit(usuario)}
                     variant="outline"
-                    className="rounded-xl w-full lg:w-auto"
+                    className="flex-1 lg:flex-none rounded-xl w-full lg:w-auto"
                   >
                     <Edit className="w-4 h-4 mr-2" />
                     Editar
@@ -250,7 +250,7 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
                   <Button
                     onClick={() => handleDelete(usuario.id, usuario.nombre)}
                     variant="destructive"
-                    className="rounded-xl w-full lg:w-auto"
+                    className="flex-1 lg:flex-none rounded-xl w-full lg:w-auto"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Eliminar
