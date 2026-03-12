@@ -173,7 +173,7 @@ export function ConfiguracionScreen({ userRole }: ConfiguracionScreenProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2">
+              <div className="space-y-2 col-span-1 md:col-span-2">
                 <Label htmlFor="nombreCliente">Nombre del Cliente / Empresa</Label>
                 <Input
                   id="nombreCliente"
@@ -184,7 +184,7 @@ export function ConfiguracionScreen({ userRole }: ConfiguracionScreenProps) {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 col-span-1">
                 <Label htmlFor="rfc">RFC</Label>
                 <Input
                   id="rfc"
@@ -195,7 +195,7 @@ export function ConfiguracionScreen({ userRole }: ConfiguracionScreenProps) {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 col-span-1">
                 <Label htmlFor="emailContacto">Email de Contacto</Label>
                 <Input
                   id="emailContacto"
@@ -207,7 +207,7 @@ export function ConfiguracionScreen({ userRole }: ConfiguracionScreenProps) {
                 />
               </div>
 
-              <div className="space-y-2 col-span-2">
+              <div className="space-y-2 col-span-1 md:col-span-2">
                 <Label htmlFor="telefonoContacto">Teléfono de Contacto</Label>
                 <Input
                   id="telefonoContacto"
