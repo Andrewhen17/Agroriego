@@ -223,7 +223,7 @@ export function AreaDetailScreen({ area, onNavigate }: AreaDetailScreenProps) {
                   value={sensor.id}
                   className="rounded-lg text-xs"
                 >
-                  {sensor.nombre.split(' ')[0]}
+                  {sensor.nombre}
                 </TabsTrigger>
               ))}
             </TabsList>
