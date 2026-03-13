@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Badge } from './ui/badge';
-import { UserPlus, Edit, Shield, Eye } from 'lucide-react';
+import { UserPlus, Edit, Shield, Eye, Trash2 } from 'lucide-react';
 
 interface UsuariosScreenProps {
   userRole: 'admin' | 'user';
@@ -15,17 +15,10 @@ interface UsuariosScreenProps {
 export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
-    rol: 'user' as 'admin' | 'user',
-    prediosAsignados: [] as string[],
-  });
-
-  const usuarios = [
+  const [usuarios, setUsuarios] = useState([
     {
       id: 'U-001',
-      nombre: 'Juan Pérez',
+      nombre: 'Juan Perez',
       email: 'juan.perez@agroriego.com',
       rol: 'admin' as const,
       prediosAsignados: ['P-001', 'P-002', 'P-003', 'P-004'],
@@ -34,7 +27,7 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
     },
     {
       id: 'U-002',
-      nombre: 'María González',
+      nombre: 'Maria Gonzalez',
       email: 'maria.gonzalez@agroriego.com',
       rol: 'user' as const,
       prediosAsignados: ['P-001', 'P-002'],
@@ -43,7 +36,7 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
     },
     {
       id: 'U-003',
-      nombre: 'Carlos Ramírez',
+      nombre: 'Carlos Ramirez',
       email: 'carlos.ramirez@agroriego.com',
       rol: 'user' as const,
       prediosAsignados: ['P-003'],
@@ -52,7 +45,7 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
     },
     {
       id: 'U-004',
-      nombre: 'Ana López',
+      nombre: 'Ana Lopez',
       email: 'ana.lopez@agroriego.com',
       rol: 'admin' as const,
       prediosAsignados: ['P-001', 'P-002', 'P-003', 'P-004'],
@@ -61,14 +54,20 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
     },
     {
       id: 'U-005',
-      nombre: 'Luis Martínez',
+      nombre: 'Luis Martinez',
       email: 'luis.martinez@agroriego.com',
       rol: 'user' as const,
       prediosAsignados: ['P-004'],
       ultimoAcceso: '2024-12-02T14:30:00',
       activo: false,
     },
-  ];
+  ]);
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    rol: 'user' as 'admin' | 'user',
+    prediosAsignados: [] as string[],
+  });
 
   const prediosDisponibles = [
     { id: 'P-001', nombre: 'Predio Norte' },
@@ -104,6 +103,16 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
     // Aquí se guardarían los datos
     alert(editingUser ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
     setShowDialog(false);
+  };
+
+  const handleDelete = (usuarioId: string, usuarioNombre: string) => {
+    if (userRole !== 'admin') return;
+
+    const confirmado = window.confirm(`Deseas eliminar a ${usuarioNombre}?`);
+    if (!confirmado) return;
+
+    setUsuarios((prevUsuarios) => prevUsuarios.filter((u) => u.id !== usuarioId));
+    alert('Usuario eliminado exitosamente');
   };
 
   const formatFecha = (fecha: string) => {
@@ -229,14 +238,24 @@ export function UsuariosScreen({ userRole }: UsuariosScreenProps) {
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => handleEdit(usuario)}
-                  variant="outline"
-                  className="rounded-xl w-full lg:w-auto flex-shrink-0"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Editar
-                </Button>
+                <div className="flex w-full lg:w-auto gap-2 flex-shrink-0">
+                  <Button
+                    onClick={() => handleEdit(usuario)}
+                    variant="outline"
+                    className="flex-1 lg:flex-none rounded-xl w-full lg:w-auto"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(usuario.id, usuario.nombre)}
+                    variant="destructive"
+                    className="flex-1 lg:flex-none rounded-xl w-full lg:w-auto"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Eliminar
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
