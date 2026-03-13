@@ -28,8 +28,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     // CONTENEDOR MAESTRO: Centrado absoluto
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
       
-      {/* TARJETA PRINCIPAL (Envoltorio exterior) */}
-      <Card className="mx-auto w-full max-w-md sm:p-10 rounded-[2rem] shadow-2xl bg-white backdrop-blur-sm border-none">
+      <div className="w-full max-w-2xl">{/* TARJETA PRINCIPAL (Envoltorio exterior) */}
+      <Card className="mx-auto sm:p-10 rounded-[2rem] shadow-2xl bg-white backdrop-blur-sm border-none">
         
         {/* Cabecera: Logo y Título */}
         <div className="text-center mb-8">
@@ -48,87 +48,88 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             En móvil es invisible, pero en pantallas 'sm' en adelante 
             aparece como un bloque envuelto. 
         */}
-        <div className="w-full my-8 p-8 sm:border sm:border-gray-100 sm:rounded-3xl sm:shadow-sm">
+        <div className="space-y-2 w-full my-8 p-8 sm:border sm:border-gray-100 sm:rounded-3xl sm:shadow-sm">
 
           
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
-              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
-                  className="pl-10 rounded-xl bg-gray-50/50"
-                  required
-                />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo Electrónico</Label>
+                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
+                  <Mail className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    className="pl-6 rounded-xl bg-gray-50/50"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-10 rounded-xl bg-gray-50/50"
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
+                  <Lock className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-6 rounded-xl bg-gray-50/50"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="predio">ID del Predio</Label>
-              <div className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3">
-                <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <Input
-                  id="predio"
-                  type="text"
-                  value={predioId}
-                  onChange={(e) => setPredioId(e.target.value)}
-                  placeholder="P-001"
-                  className="pl-10 rounded-xl bg-gray-50/50"
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="predio">ID del Predio</Label>
+                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
+                  <MapPin className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    id="predio"
+                    type="text"
+                    value={predioId}
+                    onChange={(e) => setPredioId(e.target.value)}
+                    placeholder="P-001"
+                    className="pl-6 rounded-xl bg-gray-50/50"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role">Rol de Usuario</Label>
-              <Select value={role} onValueChange={(value) => setRole(value as 'admin' | 'user')}>
-                <SelectTrigger className="relative border border-gray-200 rounded-xl bg-gray-50/50 px-3 rounded-xl bg-gray-50/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="user">Usuario (Visualización)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Rol de Usuario</Label>
+                <Select value={role} onValueChange={(value) => setRole(value as 'admin' | 'user')}>
+                  <SelectTrigger className="flex h-1 w-full items-center justify-between border border-gray-200 rounded-xl bg-gray-50/50 px-3 focus:ring-2 focus:ring-blue-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="user">Usuario (Visualización)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div></div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl shadow-md font-bold text-white transition-all hover:scale-[1.01]"
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl shadow-md font-bold text-white transition-all hover:scale-[1.01]"
+              >
+                Iniciar Sesión
+              </Button>
+            </form>
+
+            <button
+              type="button"
+              onClick={() => setShowRecover(true)}
+              className="w-full mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
             >
-              Iniciar Sesión
-            </Button>
-          </form>
-
-          <button
-            type="button"
-            onClick={() => setShowRecover(true)}
-            className="w-full mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
-        </div>
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
 
         {/* Footer de la tarjeta */}
         <div className="mt-12 pb-6 text-center">
@@ -138,6 +139,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </div>
 
       </Card>
-    </div>
+    </div></div>
   );
 }
