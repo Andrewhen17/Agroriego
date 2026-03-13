@@ -1,6 +1,7 @@
 import { Card } from './ui/card';
 import { Droplet, ThermometerSun, AlertTriangle, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { consumptionData } from '../data_source.ts';
 
 interface DashboardProps {
   data: any;
