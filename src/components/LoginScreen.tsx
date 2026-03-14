@@ -37,7 +37,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full max-w-md mx-auto">
           <Card className="w-full p-8 rounded-3xl shadow-2xl bg-white border-none">
 
             {/* Logo y título */}
