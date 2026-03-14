@@ -1,26 +1,34 @@
-const sql = require('mssql');
+const sql = require('mssql'); // <--- Solo UNA vez aquí arriba
 require('dotenv').config();
 
 const config = {
-    server: process.env.DB_SERVER,
+    server: process.env.DB_SERVER || '127.0.0.1',
     database: process.env.DB_DATABASE,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT),
+    port: parseInt(process.env.DB_PORT) || 1433,
     options: {
         encrypt: false,
         trustServerCertificate: true,
+        connectTimeout: 5000 
     },
 };
 
 let pool;
 
 async function getPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
-        console.log('Conectado a SQL Server');
+    try {
+        if (!pool) {
+            console.log('⏳ Intentando conectar a SQL Server...');
+            pool = await sql.connect(config);
+            console.log('✅ Conectado a SQL Server con éxito');
+        }
+        return pool;
+    } catch (err) {
+        console.error('❌ Error crítico al conectar a la DB:', err.message);
+        pool = null; 
+        throw err;
     }
-    return pool;
 }
 
-module.exports = { getPool, sql };
+module.exports = { getPool, sql }; // <--- Asegúrate de que esto esté al final
