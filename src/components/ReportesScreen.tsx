@@ -1,268 +1,263 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { FileDown, FileText } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import { api } from '../api';
 
 export function ReportesScreen() {
-  const [periodo, setPeriodo] = useState('diario');
-  const [predio, setPredio] = useState('todos');
-  const [area, setArea] = useState('todas');
+  const [areas, setAreas] = useState<any[]>([]);
+  const [areaSeleccionada, setAreaSeleccionada] = useState('todas');
+  const [lecturas, setLecturas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [desde, setDesde] = useState(
+      new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+  );
+  const [hasta, setHasta] = useState(
+      new Date().toISOString().split('T')[0]
+  );
 
-  const generateData = () => {
-    if (periodo === 'diario') {
-      return Array.from({ length: 24 }, (_, i) => ({
-        hora: `${i.toString().padStart(2, '0')}:00`,
-        consumo: 0.5 + Math.random() * 2,
-        humedad: 20 + Math.random() * 10,
-      }));
-    } else if (periodo === 'semanal') {
-      return ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((dia) => ({
-        hora: dia,
-        consumo: 8 + Math.random() * 12,
-        humedad: 20 + Math.random() * 10,
-      }));
-    } else {
-      return Array.from({ length: 30 }, (_, i) => ({
-        hora: `Día ${i + 1}`,
-        consumo: 15 + Math.random() * 20,
-        humedad: 20 + Math.random() * 10,
-      }));
+  useEffect(() => {
+    api.getAreas().then(data => {
+      setAreas(Array.isArray(data) ? data : []);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (areaSeleccionada === 'todas' || !areaSeleccionada) return;
+    setLoading(true);
+    api.getTelemetria(areaSeleccionada, desde, hasta).then(data => {
+      setLecturas(Array.isArray(data) ? data.reverse() : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [areaSeleccionada, desde, hasta]);
+
+  const exportarCSV = () => {
+    if (lecturas.length === 0) {
+      alert('No hay datos para exportar. Selecciona un área y un rango de fechas.');
+      return;
     }
+    const headers = Object.keys(lecturas[0]).join(',');
+    const filas = lecturas.map(r => Object.values(r).join(','));
+    const csv = [headers, ...filas].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_${areaSeleccionada}_${desde}_${hasta}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const data = generateData();
-
-  const detailedData = [
-    { tiempo: '00:00', humedad: 24.5, temperatura: 25.2, consumo: 0.08, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '00:10', humedad: 24.3, temperatura: 25.0, consumo: 0.07, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '00:20', humedad: 24.1, temperatura: 24.8, consumo: 0.06, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '00:30', humedad: 24.0, temperatura: 24.6, consumo: 0.06, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '00:40', humedad: 23.8, temperatura: 24.5, consumo: 0.05, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '00:50', humedad: 23.7, temperatura: 24.3, consumo: 0.05, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '01:00', humedad: 23.5, temperatura: 24.2, consumo: 0.05, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '01:10', humedad: 23.4, temperatura: 24.0, consumo: 0.04, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '01:20', humedad: 23.2, temperatura: 23.9, consumo: 0.04, radiacion: 0, evapotranspiracion: 0 },
-    { tiempo: '01:30', humedad: 23.1, temperatura: 23.8, consumo: 0.04, radiacion: 0, evapotranspiracion: 0 },
-  ];
-
-  const handleExportPDF = () => {
-    alert('Exportando reporte a PDF...\n\nEn una implementación real, esto generaría un archivo PDF con los datos y gráficas del reporte.');
+  const exportarPDF = () => {
+    alert('Exportación a PDF: En producción se generaría un PDF con las gráficas y tablas del período seleccionado.');
   };
 
-  const handleExportExcel = () => {
-    alert('Exportando reporte a Excel...\n\nEn una implementación real, esto generaría un archivo Excel con todos los datos detallados.');
-  };
+  const humProm = lecturas.length
+      ? (lecturas.reduce((s, l) => s + (l.humedad_suelo || 0), 0) / lecturas.length).toFixed(1)
+      : '—';
+  const tempProm = lecturas.length
+      ? (lecturas.reduce((s, l) => s + (l.temperatura_ambiental || 0), 0) / lecturas.length).toFixed(1)
+      : '—';
+  const consumoTotal = lecturas
+      .filter(l => l.estatus_riego)
+      .reduce((s, l) => s + (l.flujo_riego || 0), 0)
+      .toFixed(1);
 
-  const stats = [
-    { label: 'Consumo Total', value: periodo === 'diario' ? '14.8 m³' : periodo === 'semanal' ? '103.6 m³' : '450.2 m³' },
-    { label: 'Humedad Promedio', value: '24.5%' },
-    { label: 'Temperatura Promedio', value: '27.3°C' },
-    { label: 'Lecturas Realizadas', value: periodo === 'diario' ? '144' : periodo === 'semanal' ? '1,008' : '4,320' },
-  ];
+  const formatFecha = (str: string) =>
+      new Date(str).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl mb-2">Reportes</h1>
-            <p className="text-sm md:text-base text-gray-600">Análisis y reportes del sistema de riego</p>
+      <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto space-y-6">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl mb-2">Reportes y Análisis</h1>
+              <p className="text-sm text-gray-600">Consulta y exporta datos históricos</p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={exportarPDF} variant="outline" className="rounded-xl">
+                <FileText className="w-4 h-4 mr-2" /> PDF
+              </Button>
+              <Button
+                  onClick={exportarCSV}
+                  className="bg-gradient-to-r from-blue-600 to-green-600 rounded-xl"
+              >
+                <FileDown className="w-4 h-4 mr-2" /> Exportar CSV
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <Button
-              onClick={handleExportPDF}
-              variant="outline"
-              className="rounded-xl w-full sm:w-auto"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Exportar PDF</span>
-              <span className="sm:hidden">PDF</span>
-            </Button>
-            <Button
-              onClick={handleExportExcel}
-              className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl w-full sm:w-auto"
-            >
-              <FileDown className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Exportar Excel</span>
-              <span className="sm:hidden">Excel</span>
-            </Button>
+
+          {/* Filtros */}
+          <Card className="p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">Filtros</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600 font-medium">Área de Riego</label>
+                <Select value={areaSeleccionada} onValueChange={setAreaSeleccionada}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Selecciona un área" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas las áreas</SelectItem>
+                    {areas.map(a => (
+                        <SelectItem key={a.id_area} value={a.id_area}>
+                          {a.nombre}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600 font-medium">Desde</label>
+                <input
+                    type="date"
+                    value={desde}
+                    onChange={e => setDesde(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600 font-medium">Hasta</label>
+                <input
+                    type="date"
+                    value={hasta}
+                    onChange={e => setHasta(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            {loading && <p className="text-sm text-gray-500 mt-3">Cargando datos...</p>}
+            {!loading && lecturas.length > 0 && (
+                <p className="text-sm text-green-600 mt-3">{lecturas.length} lecturas encontradas</p>
+            )}
+          </Card>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Lecturas', value: lecturas.length, color: 'text-purple-700' },
+              { label: 'Hum. Promedio', value: humProm + '%', color: 'text-green-700' },
+              { label: 'Temp. Promedio', value: tempProm + '°C', color: 'text-orange-700' },
+              { label: 'Consumo Total', value: consumoTotal + ' m³', color: 'text-blue-700' },
+            ].map(s => (
+                <Card key={s.label} className="p-5 rounded-2xl shadow-sm">
+                  <p className="text-sm text-gray-500 mb-1">{s.label}</p>
+                  <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                </Card>
+            ))}
           </div>
+
+          {lecturas.length > 0 && (
+              <>
+                {/* Gráfica humedad */}
+                <Card className="p-6 rounded-2xl shadow-sm">
+                  <h2 className="text-lg font-semibold mb-4">Humedad del Suelo</h2>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={lecturas}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis
+                          dataKey="fecha_hora"
+                          stroke="#6b7280"
+                          style={{ fontSize: '11px' }}
+                          tickFormatter={formatFecha}
+                      />
+                      <YAxis stroke="#6b7280" style={{ fontSize: '11px' }} />
+                      <Tooltip
+                          contentStyle={{ borderRadius: '12px', border: 'none' }}
+                          labelFormatter={v => new Date(v).toLocaleString('es-MX')}
+                          formatter={(v: any) => [`${Number(v).toFixed(1)}%`, 'Humedad']}
+                      />
+                      <Legend />
+                      <Line
+                          type="monotone"
+                          dataKey="humedad_suelo"
+                          stroke="#10b981"
+                          strokeWidth={2}
+                          dot={false}
+                          name="Humedad Suelo %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                {/* Gráfica consumo */}
+                <Card className="p-6 rounded-2xl shadow-sm">
+                  <h2 className="text-lg font-semibold mb-4">Consumo de Agua (m³/h)</h2>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={lecturas.filter(l => l.estatus_riego)}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis
+                          dataKey="fecha_hora"
+                          stroke="#6b7280"
+                          style={{ fontSize: '11px' }}
+                          tickFormatter={formatFecha}
+                      />
+                      <YAxis stroke="#6b7280" style={{ fontSize: '11px' }} />
+                      <Tooltip
+                          contentStyle={{ borderRadius: '12px', border: 'none' }}
+                          formatter={(v: any) => [`${Number(v).toFixed(2)} m³/h`, 'Flujo']}
+                      />
+                      <Legend />
+                      <Bar dataKey="flujo_riego" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Flujo Riego" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                {/* Tabla */}
+                <Card className="p-6 rounded-2xl shadow-sm">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Tabla Detallada ({lecturas.length} registros)
+                  </h2>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                      <tr className="border-b bg-gray-50">
+                        {['Fecha/Hora', 'Hum. %', 'Temp. Suelo', 'Temp. Amb.', 'H. Relativa', 'Radiación', 'ET', 'E. Cond.', 'Riego', 'Flujo'].map(h => (
+                            <th key={h} className="text-left p-3 text-gray-600 font-medium whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {lecturas.slice(0, 50).map((l, i) => (
+                          <tr key={i} className="border-b hover:bg-gray-50">
+                            <td className="p-3 whitespace-nowrap text-gray-600">
+                              {new Date(l.fecha_hora).toLocaleString('es-MX')}
+                            </td>
+                            <td className="p-3 font-bold text-green-700">{l.humedad_suelo}%</td>
+                            <td className="p-3">{l.temperatura_suelo}°C</td>
+                            <td className="p-3">{l.temperatura_ambiental}°C</td>
+                            <td className="p-3">{l.humedad_relativa}%</td>
+                            <td className="p-3">{l.radiacion_solar}</td>
+                            <td className="p-3">{l.evapotranspiracion}</td>
+                            <td className="p-3">{l.electroconductividad}</td>
+                            <td className="p-3">{l.estatus_riego ? '🟢' : '⚪'}</td>
+                            <td className="p-3">{l.flujo_riego}</td>
+                          </tr>
+                      ))}
+                      </tbody>
+                    </table>
+                    {lecturas.length > 50 && (
+                        <p className="text-center text-xs text-gray-400 mt-3">
+                          Mostrando 50 de {lecturas.length} — usa "Exportar CSV" para todos los datos
+                        </p>
+                    )}
+                  </div>
+                </Card>
+              </>
+          )}
+
+          {areaSeleccionada !== 'todas' && !loading && lecturas.length === 0 && (
+              <Card className="p-12 rounded-2xl text-center">
+                <p className="text-gray-500">No hay lecturas en el rango de fechas seleccionado</p>
+              </Card>
+          )}
         </div>
-
-        {/* Filtros */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <h2 className="text-lg mb-4">Filtros de Reporte</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-gray-600">Periodo</label>
-              <Select value={periodo} onValueChange={setPeriodo}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="diario">Diario (Últimas 24h)</SelectItem>
-                  <SelectItem value="semanal">Semanal (Últimos 7 días)</SelectItem>
-                  <SelectItem value="mensual">Mensual (Últimos 30 días)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm text-gray-600">Predio</label>
-              <Select value={predio} onValueChange={setPredio}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos los Predios</SelectItem>
-                  <SelectItem value="P-001">Predio Norte</SelectItem>
-                  <SelectItem value="P-002">Predio Sur</SelectItem>
-                  <SelectItem value="P-003">Predio Este</SelectItem>
-                  <SelectItem value="P-004">Predio Oeste</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm text-gray-600">Área</label>
-              <Select value={area} onValueChange={setArea}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas las Áreas</SelectItem>
-                  <SelectItem value="A-001">Zona Tomate A1</SelectItem>
-                  <SelectItem value="A-002">Zona Maíz B2</SelectItem>
-                  <SelectItem value="A-003">Zona Lechuga C1</SelectItem>
-                  <SelectItem value="A-004">Zona Pepino D3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </Card>
-
-        {/* Estadísticas Resumidas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <Card key={index} className="p-6 rounded-2xl shadow-sm">
-              <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-              <p className="text-3xl">{stat.value}</p>
-            </Card>
-          ))}
-        </div>
-
-        {/* Gráfica de Consumo de Agua */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <h2 className="text-xl mb-4">Consumo de Agua Respecto al Tiempo</h2>
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="hora" 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-                label={{ value: 'm³', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  borderRadius: '12px', 
-                  border: 'none', 
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
-                }}
-                formatter={(value: any) => [`${value.toFixed(2)} m³`, 'Consumo']}
-              />
-              <Legend />
-              <Bar 
-                dataKey="consumo" 
-                fill="#3b82f6" 
-                radius={[8, 8, 0, 0]}
-                name="Consumo de Agua"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* Gráfica de Humedad */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <h2 className="text-xl mb-4">Humedad del Suelo Respecto al Tiempo</h2>
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="hora" 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-                label={{ value: '%', angle: -90, position: 'insideLeft' }}
-                domain={[0, 50]}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  borderRadius: '12px', 
-                  border: 'none', 
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
-                }}
-                formatter={(value: any) => [`${value.toFixed(1)}%`, 'Humedad']}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="humedad" 
-                stroke="#16a34a" 
-                strokeWidth={3}
-                dot={{ fill: '#16a34a', r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Humedad del Suelo"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* Tabla Detallada */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <h2 className="text-xl mb-4">Datos Detallados (Cada 10 minutos)</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 text-gray-600">Tiempo</th>
-                  <th className="text-right p-3 text-gray-600">Humedad (%)</th>
-                  <th className="text-right p-3 text-gray-600">Temperatura (°C)</th>
-                  <th className="text-right p-3 text-gray-600">Consumo (m³)</th>
-                  <th className="text-right p-3 text-gray-600">Radiación (W/m²)</th>
-                  <th className="text-right p-3 text-gray-600">ET (mm/día)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detailedData.map((row, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="p-3">{row.tiempo}</td>
-                    <td className="text-right p-3">{row.humedad.toFixed(1)}</td>
-                    <td className="text-right p-3">{row.temperatura.toFixed(1)}</td>
-                    <td className="text-right p-3">{row.consumo.toFixed(2)}</td>
-                    <td className="text-right p-3">{row.radiacion}</td>
-                    <td className="text-right p-3">{row.evapotranspiracion}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500">
-              Mostrando las primeras 10 lecturas. Exporta a Excel para ver todos los datos.
-            </p>
-          </div>
-        </Card>
       </div>
-    </div>
   );
 }

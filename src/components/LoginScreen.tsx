@@ -3,142 +3,125 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card } from './ui/card';
-import { Droplet, Lock, Mail, MapPin } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Droplet, Lock, Mail } from 'lucide-react';
+import { api } from '../api';
 
 interface LoginScreenProps {
-  onLogin: (email: string, role: 'admin' | 'user', predioId: string) => void;
+  onLogin: (user: any) => void;
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [predioId, setPredioId] = useState('');
-  const [role, setRole] = useState<'admin' | 'user'>('user');
-  const [showRecover, setShowRecover] = useState(false);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password && predioId) {
-      onLogin(email, role, predioId);
+    setLoading(true);
+    setErr('');
+    try {
+      const result = await api.login(email, password);
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+        onLogin(result.user);
+      } else {
+        setErr(result.error || 'Credenciales incorrectas');
+        setLoading(false);
+      }
+    } catch {
+      setErr('No se pudo conectar con el servidor');
+      setLoading(false);
     }
   };
 
   return (
-    // CONTENEDOR MAESTRO: Centrado absoluto
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
-      
-      <div className="w-full max-w-2xl">{/* TARJETA PRINCIPAL (Envoltorio exterior) */}
-      <Card className="mx-auto sm:p-10 rounded-[2rem] shadow-2xl bg-white backdrop-blur-sm border-none">
-        
-        {/* Cabecera: Logo y Título */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Droplet className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight">
-            AgroRiego IoT
-          </h1>
-          <p className="text-gray-500 text-sm sm:text-base">
-            Gestión inteligente de cultivos
-          </p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md">
+          <Card className="mx-auto p-8 rounded-3xl shadow-2xl bg-white border-none">
 
-        {/* ESTA ES LA TARJETA INTERNA: 
-            En móvil es invisible, pero en pantallas 'sm' en adelante 
-            aparece como un bloque envuelto. 
-        */}
-        <div className="space-y-2 w-full my-8 p-8 sm:border sm:border-gray-100 sm:rounded-3xl sm:shadow-sm">
+            {/* Logo y título */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Droplet className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-800">AgroRiego IoT</h1>
+              <p className="text-gray-500 text-sm mt-1">Gestión inteligente de cultivos</p>
+            </div>
 
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-3">
+            {/* Formulario */}
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
-                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
-                  <Mail className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
                   <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    className="pl-6 rounded-xl bg-gray-50/50"
-                    required
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="usuario@agroriego.mx"
+                      className="pl-10 rounded-xl"
+                      required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
-                  <Lock className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
                   <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="pl-6 rounded-xl bg-gray-50/50"
-                    required
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-10 rounded-xl"
+                      required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="predio">ID del Predio</Label>
-                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 px-3 h-10 focus-within:ring-2 focus-within:ring-blue-500">
-                  <MapPin className="top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    id="predio"
-                    type="text"
-                    value={predioId}
-                    onChange={(e) => setPredioId(e.target.value)}
-                    placeholder="P-001"
-                    className="pl-6 rounded-xl bg-gray-50/50"
-                    required
-                  />
-                </div>
-              </div>
+              {err && (
+                  <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl p-3">
+                    {err}
+                  </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="role">Rol de Usuario</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as 'admin' | 'user')}>
-                  <SelectTrigger className="flex h-1 w-full items-center justify-between border border-gray-200 rounded-xl bg-gray-50/50 px-3 focus:ring-2 focus:ring-blue-500">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="user">Usuario (Visualización)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div></div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl shadow-md font-bold text-white transition-all hover:scale-[1.01]"
+              <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl font-bold text-white"
               >
-                Iniciar Sesión
+                {loading ? 'Verificando...' : 'Iniciar Sesión'}
               </Button>
             </form>
 
-            <button
-              type="button"
-              onClick={() => setShowRecover(true)}
-              className="w-full mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-            >
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
+            {/* Cuentas de demo */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              <p className="text-xs font-semibold text-gray-500 mb-2">Cuentas de demostración:</p>
+              {[
+                { email: 'admin@agroriego.mx', password: 'admin123', rol: 'Admin Sistema' },
+                { email: 'predio@agroriego.mx', password: 'predio123', rol: 'Admin Predio' },
+                { email: 'operador@agroriego.mx', password: 'op123', rol: 'Operador' },
+              ].map(u => (
+                  <div
+                      key={u.email}
+                      onClick={() => { setEmail(u.email); setPassword(u.password); }}
+                      className="flex justify-between text-xs py-1 cursor-pointer hover:text-blue-600"
+                  >
+                    <span>{u.email}</span>
+                    <span className="text-green-600 font-medium">{u.rol}</span>
+                  </div>
+              ))}
+            </div>
 
-        {/* Footer de la tarjeta */}
-        <div className="mt-12 pb-6 text-center">
-          <p className="text-xs text-gray-400">
-            Actualización cada 10 min • Soporte 24/7
-          </p>
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Actualización cada 10 min · Soporte 24/7
+            </p>
+          </Card>
         </div>
-
-      </Card>
-    </div></div>
+      </div>
   );
 }

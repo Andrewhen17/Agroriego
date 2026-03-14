@@ -22,8 +22,12 @@ export default function App() {
   const [selectedData, setSelectedData] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleLogin = (email: string, role: 'admin' | 'user', predioId: string) => {
-    setUserRole(role);
+  const handleLogin = (user: any) => {
+    setUserRole(
+        user.rol === 'Administrador Sistema' || user.rol === 'Administrador Predio'
+            ? 'admin'
+            : 'user'
+    );
     setIsLoggedIn(true);
     setCurrentView('dashboard');
   };

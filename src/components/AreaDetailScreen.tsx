@@ -1,19 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { 
-  Droplet, 
-  Thermometer, 
-  Wind, 
-  Sun, 
-  TrendingDown, 
-  Waves,
-  HelpCircle,
-  ArrowLeft
+import {
+  Droplet, Thermometer, Wind, Sun, TrendingDown, Waves, HelpCircle, ArrowLeft
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+import { api } from '../api';
 
 interface AreaDetailScreenProps {
   area: any;
@@ -21,297 +16,257 @@ interface AreaDetailScreenProps {
 }
 
 export function AreaDetailScreen({ area, onNavigate }: AreaDetailScreenProps) {
-  const [period, setPeriod] = useState('24h');
+  const [lecturas, setLecturas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('humedad_suelo');
+  const [desde, setDesde] = useState(
+      new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+  );
+  const [hasta, setHasta] = useState(
+      new Date().toISOString().split('T')[0]
+  );
 
-  // Mock data para diferentes periodos
-  const generateData = () => {
-    const baseData = {
-      '24h': Array.from({ length: 24 }, (_, i) => ({
-        time: `${i.toString().padStart(2, '0')}:00`,
-        humedad: 18 + Math.random() * 10,
-        temperatura: 25 + Math.random() * 5,
-        humedadRelativa: 50 + Math.random() * 20,
-        radiacion: 200 + Math.random() * 500,
-        evapotranspiracion: 3 + Math.random() * 3,
-        consumo: 0.08 + Math.random() * 0.08,
-        conductividad: 1.2 + Math.random() * 0.5,
-      })),
-      '7d': Array.from({ length: 7 }, (_, i) => ({
-        time: `Día ${i + 1}`,
-        humedad: 18 + Math.random() * 10,
-        temperatura: 25 + Math.random() * 5,
-        humedadRelativa: 50 + Math.random() * 20,
-        radiacion: 200 + Math.random() * 500,
-        evapotranspiracion: 3 + Math.random() * 3,
-        consumo: 0.08 + Math.random() * 0.08,
-        conductividad: 1.2 + Math.random() * 0.5,
-      })),
-      '30d': Array.from({ length: 30 }, (_, i) => ({
-        time: `${i + 1}`,
-        humedad: 18 + Math.random() * 10,
-        temperatura: 25 + Math.random() * 5,
-        humedadRelativa: 50 + Math.random() * 20,
-        radiacion: 200 + Math.random() * 500,
-        evapotranspiracion: 3 + Math.random() * 3,
-        consumo: 0.08 + Math.random() * 0.08,
-        conductividad: 1.2 + Math.random() * 0.5,
-      })),
-    };
-    return baseData[period as keyof typeof baseData];
+  const areaId = area?.id_area || area?.id;
+
+  useEffect(() => {
+    if (!areaId) return;
+    setLoading(true);
+    api.getTelemetria(areaId, desde, hasta).then(data => {
+      setLecturas(Array.isArray(data) ? data.reverse() : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [areaId, desde, hasta]);
+
+  const tabLabels: Record<string, string> = {
+    humedad_suelo: 'Humedad Suelo %',
+    temperatura_suelo: 'Temp. Suelo °C',
+    temperatura_ambiental: 'Temp. Ambiental °C',
+    humedad_relativa: 'H. Relativa %',
+    radiacion_solar: 'Radiación W/m²',
+    evapotranspiracion: 'ET mm/día',
+    electroconductividad: 'E. Conductividad dS/m',
   };
 
-  const data = generateData();
+  const tabs = Object.keys(tabLabels);
+
+  const ultima = lecturas[lecturas.length - 1];
+
+  const formatFecha = (str: string) => {
+    if (!str) return '—';
+    return new Date(str).toLocaleString('es-MX', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const getColor = (humedad: number) => {
+    if (!area) return 'text-gray-600';
+    if (humedad < area.punto_marchitez) return 'text-red-600';
+    if (humedad > area.capacidad_campo) return 'text-blue-600';
+    return 'text-green-600';
+  };
+
+  const getLabel = (humedad: number) => {
+    if (!area) return '';
+    if (humedad < area.punto_marchitez) return 'Estrés Hídrico';
+    if (humedad > area.capacidad_campo) return 'Saturación';
+    return 'Óptimo';
+  };
 
   const sensors = [
-    {
-      id: 'humedad',
-      nombre: 'Humedad del Suelo',
-      valor: 18,
-      unidad: '%',
-      icon: Droplet,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      chartColor: '#dc2626',
-      dataKey: 'humedad',
-      status: 'critical'
-    },
-    {
-      id: 'temperatura',
-      nombre: 'Temperatura',
-      valor: 27,
-      unidad: '°C',
-      icon: Thermometer,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      chartColor: '#ea580c',
-      dataKey: 'temperatura',
-      status: 'normal'
-    },
-    {
-      id: 'humedad-relativa',
-      nombre: 'Humedad Relativa',
-      valor: 65,
-      unidad: '%',
-      icon: Wind,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      chartColor: '#2563eb',
-      dataKey: 'humedadRelativa',
-      status: 'normal'
-    },
-    {
-      id: 'radiacion',
-      nombre: 'Radiación Solar',
-      valor: 680,
-      unidad: 'W/m²',
-      icon: Sun,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
-      chartColor: '#ca8a04',
-      dataKey: 'radiacion',
-      status: 'normal'
-    },
-    {
-      id: 'evapotranspiracion',
-      nombre: 'Evapotranspiración',
-      valor: 4.5,
-      unidad: 'mm/día',
-      icon: TrendingDown,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      chartColor: '#16a34a',
-      dataKey: 'evapotranspiracion',
-      status: 'normal'
-    },
-    {
-      id: 'consumo',
-      nombre: 'Consumo de Agua',
-      valor: 0.12,
-      unidad: 'm³/10min',
-      icon: Waves,
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
-      chartColor: '#0891b2',
-      dataKey: 'consumo',
-      status: 'normal'
-    },
-    {
-      id: 'conductividad',
-      nombre: 'Conductividad',
-      valor: 1.5,
-      unidad: '?',
-      icon: HelpCircle,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      chartColor: '#9333ea',
-      dataKey: 'conductividad',
-      status: 'normal'
-    },
+    { id: 'humedad_suelo', nombre: 'Humedad Suelo', icon: Droplet, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { id: 'temperatura_suelo', nombre: 'Temp. Suelo', icon: Thermometer, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { id: 'humedad_relativa', nombre: 'H. Relativa', icon: Wind, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+    { id: 'radiacion_solar', nombre: 'Radiación Solar', icon: Sun, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    { id: 'evapotranspiracion', nombre: 'ET', icon: TrendingDown, color: 'text-green-600', bg: 'bg-green-50' },
+    { id: 'flujo_riego', nombre: 'Flujo Riego', icon: Waves, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { id: 'electroconductividad', nombre: 'E. Conductiv.', icon: HelpCircle, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
-  const getHumidityStatus = (humidity: number) => {
-    if (humidity >= 10 && humidity < 20) return { text: 'Falta de Agua', color: 'text-red-600', bg: 'bg-red-100' };
-    if (humidity >= 20 && humidity <= 30) return { text: 'Adecuado', color: 'text-green-600', bg: 'bg-green-100' };
-    if (humidity > 30 && humidity <= 50) return { text: 'Exceso de Agua', color: 'text-blue-600', bg: 'bg-blue-100' };
-    return { text: 'Fuera de Rango', color: 'text-gray-600', bg: 'bg-gray-100' };
-  };
-
-  const humidityStatus = getHumidityStatus(sensors[0].valor);
-
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <Button
-            onClick={() => onNavigate('areas')}
-            variant="ghost"
-            className="rounded-xl w-fit"
-          >
-            ← Volver a Áreas
-          </Button>
-          <div className="w-px h-6 bg-gray-300 hidden sm:block" />
-          <div>
-            <h1 className="text-2xl md:text-3xl">{area?.nombre || 'Detalle del Área'}</h1>
-            <p className="text-sm md:text-base text-gray-600">{area?.predio || 'Información detallada'}</p>
-          </div>
-        </div>
+      <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* Estado General */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <p className="text-sm text-gray-600 mb-1">Estado Actual de Humedad</p>
-              <div className="flex items-center gap-3">
-                <p className="text-4xl">{sensors[0].valor}%</p>
-                <span className={`px-3 py-1 rounded-xl text-sm ${humidityStatus.bg} ${humidityStatus.color}`}>
-                  {humidityStatus.text}
-                </span>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Button onClick={() => onNavigate('areas')} variant="ghost" className="rounded-xl w-fit">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Volver a Áreas
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-3xl">{area?.nombre || 'Detalle del Área'}</h1>
+              <p className="text-sm text-gray-600">
+                {area?.nombre_predio} · {area?.tipo_cultivo} · {area?.tamano_hectareas} ha · ID: {areaId}
+              </p>
+            </div>
+          </div>
+
+          {/* Filtro de fechas */}
+          <Card className="p-4 rounded-2xl shadow-sm">
+            <div className="flex flex-wrap gap-4 items-end">
+              <div>
+                <label className="text-xs text-gray-600 font-medium block mb-1">Desde</label>
+                <input
+                    type="date"
+                    value={desde}
+                    onChange={e => setDesde(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-600 font-medium block mb-1">Hasta</label>
+                <input
+                    type="date"
+                    value={hasta}
+                    onChange={e => setHasta(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="text-sm text-gray-500">
+                {loading ? 'Cargando...' : `${lecturas.length} lecturas encontradas`}
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              Actualización cada 10 minutos
-            </div>
-          </div>
-        </Card>
+          </Card>
 
-        {/* Indicadores de Sensores */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {sensors.map((sensor) => {
-            const Icon = sensor.icon;
-            return (
-              <Card key={sensor.id} className={`p-4 rounded-2xl shadow-sm ${sensor.bgColor}`}>
-                <div className="text-center">
-                  <Icon className={`w-8 h-8 ${sensor.color} mx-auto mb-2`} />
-                  <p className="text-xs text-gray-600 mb-1">{sensor.nombre}</p>
-                  <p className={`text-xl ${sensor.color}`}>
-                    {sensor.valor}
-                    <span className="text-sm ml-1">{sensor.unidad}</span>
-                  </p>
+          {/* Estado actual */}
+          {ultima && (
+              <Card className="p-6 rounded-2xl shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Última Lectura</p>
+                    <p className="text-xs text-gray-400">{formatFecha(ultima.fecha_hora)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-4xl font-bold ${getColor(ultima.humedad_suelo)}`}>
+                      {ultima.humedad_suelo}%
+                    </p>
+                    <span className={`text-sm px-3 py-1 rounded-xl ${
+                        ultima.humedad_suelo < (area?.punto_marchitez || 0)
+                            ? 'bg-red-100 text-red-700'
+                            : ultima.humedad_suelo > (area?.capacidad_campo || 100)
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-green-100 text-green-700'
+                    }`}>
+                  {getLabel(ultima.humedad_suelo)}
+                </span>
+                  </div>
                 </div>
               </Card>
-            );
-          })}
-        </div>
+          )}
 
-        {/* Tabs con Gráficas */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <Tabs defaultValue="humedad" className="w-full">
-            <TabsList className="flex flex-wrap mb-6 bg-gray-100 p-1 rounded-xl h-auto gap-1">
-              {sensors.map((sensor) => (
-                <TabsTrigger 
-                  key={sensor.id} 
-                  value={sensor.id}
-                  className="rounded-lg text-xs"
-                >
-                  {sensor.nombre}
-                </TabsTrigger>
+          {/* Indicadores */}
+          {ultima && (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                {sensors.map(s => {
+                  const Icon = s.icon;
+                  return (
+                      <Card key={s.id} className={`p-4 rounded-2xl shadow-sm ${s.bg}`}>
+                        <div className="text-center">
+                          <Icon className={`w-6 h-6 ${s.color} mx-auto mb-1`} />
+                          <p className="text-xs text-gray-600 mb-1">{s.nombre}</p>
+                          <p className={`text-lg font-bold ${s.color}`}>
+                            {ultima[s.id] !== undefined && ultima[s.id] !== null
+                                ? Number(ultima[s.id]).toFixed(1)
+                                : '—'}
+                          </p>
+                        </div>
+                      </Card>
+                  );
+                })}
+              </div>
+          )}
+
+          {/* Gráfica */}
+          <Card className="p-6 rounded-2xl shadow-sm">
+            <Tabs value={tab} onValueChange={setTab}>
+              <div className="mb-4">
+                <p className="font-semibold text-gray-800 mb-3">Histórico de variables</p>
+                <TabsList className="flex flex-wrap h-auto gap-1 bg-gray-100 p-1 rounded-xl">
+                  {tabs.map(t => (
+                      <TabsTrigger key={t} value={t} className="rounded-lg text-xs">
+                        {tabLabels[t]}
+                      </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+              {tabs.map(t => (
+                  <TabsContent key={t} value={t}>
+                    {lecturas.length === 0 ? (
+                        <div className="h-64 flex items-center justify-center text-gray-400">
+                          No hay lecturas en este rango de fechas
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={lecturas}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis
+                                dataKey="fecha_hora"
+                                stroke="#6b7280"
+                                style={{ fontSize: '11px' }}
+                                tickFormatter={v => new Date(v).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}
+                            />
+                            <YAxis stroke="#6b7280" style={{ fontSize: '11px' }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                labelFormatter={v => formatFecha(v)}
+                                formatter={(value: any) => [Number(value).toFixed(2), tabLabels[t]]}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey={t}
+                                stroke="#3b82f6"
+                                strokeWidth={2}
+                                dot={false}
+                                activeDot={{ r: 5 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                  </TabsContent>
               ))}
-            </TabsList>
+            </Tabs>
+          </Card>
 
-            {sensors.map((sensor) => (
-              <TabsContent key={sensor.id} value={sensor.id}>
-                <div className="mb-4">
-                  <h3 className="text-xl mb-1">{sensor.nombre}</h3>
-                  <p className="text-sm text-gray-600">
-                    Valor actual: <span className={sensor.color}>{sensor.valor} {sensor.unidad}</span>
-                  </p>
-                </div>
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="time" 
-                      stroke="#6b7280"
-                      style={{ fontSize: '12px' }}
-                    />
-                    <YAxis 
-                      stroke="#6b7280"
-                      style={{ fontSize: '12px' }}
-                      label={{ 
-                        value: sensor.unidad, 
-                        angle: -90, 
-                        position: 'insideLeft',
-                        style: { fontSize: '12px' }
-                      }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        borderRadius: '12px', 
-                        border: 'none', 
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
-                      }}
-                      formatter={(value: any) => [`${Number(value).toFixed(2)} ${sensor.unidad}`, sensor.nombre]}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey={sensor.dataKey}
-                      stroke={sensor.chartColor}
-                      strokeWidth={3}
-                      dot={{ fill: sensor.chartColor, r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </Card>
-
-        {/* Tabla de Datos Detallados */}
-        <Card className="p-6 rounded-2xl shadow-sm">
-          <h3 className="text-xl mb-4">Datos Detallados (Cada 10 minutos)</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
+          {/* Tabla */}
+          <Card className="p-6 rounded-2xl shadow-sm">
+            <h3 className="font-semibold text-gray-800 mb-4">
+              Tabla de Lecturas ({lecturas.length} registros)
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 text-gray-600">Hora</th>
-                  <th className="text-right p-3 text-gray-600">Humedad %</th>
-                  <th className="text-right p-3 text-gray-600">Temp °C</th>
-                  <th className="text-right p-3 text-gray-600">H. Relativa %</th>
-                  <th className="text-right p-3 text-gray-600">Radiación W/m²</th>
-                  <th className="text-right p-3 text-gray-600">ET mm/día</th>
-                  <th className="text-right p-3 text-gray-600">Consumo m³</th>
-                  <th className="text-right p-3 text-gray-600">Conductividad</th>
+                  {['Fecha/Hora', 'Humedad %', 'Temp. Suelo', 'H. Relativa', 'Radiación', 'ET', 'E. Cond.', 'Riego'].map(h => (
+                      <th key={h} className="text-left p-3 text-gray-600 font-medium text-xs">{h}</th>
+                  ))}
                 </tr>
-              </thead>
-              <tbody>
-                {data.slice(0, 10).map((row, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="p-3">{row.time}</td>
-                    <td className="text-right p-3">{row.humedad.toFixed(1)}</td>
-                    <td className="text-right p-3">{row.temperatura.toFixed(1)}</td>
-                    <td className="text-right p-3">{row.humedadRelativa.toFixed(1)}</td>
-                    <td className="text-right p-3">{row.radiacion.toFixed(0)}</td>
-                    <td className="text-right p-3">{row.evapotranspiracion.toFixed(2)}</td>
-                    <td className="text-right p-3">{row.consumo.toFixed(3)}</td>
-                    <td className="text-right p-3">{row.conductividad.toFixed(2)}</td>
-                  </tr>
+                </thead>
+                <tbody>
+                {lecturas.slice(0, 20).map((l, i) => (
+                    <tr key={i} className="border-b hover:bg-gray-50">
+                      <td className="p-3 text-xs text-gray-600">{formatFecha(l.fecha_hora)}</td>
+                      <td className={`p-3 font-bold ${getColor(l.humedad_suelo)}`}>{l.humedad_suelo}%</td>
+                      <td className="p-3 text-gray-700">{l.temperatura_suelo}°C</td>
+                      <td className="p-3 text-gray-700">{l.humedad_relativa}%</td>
+                      <td className="p-3 text-gray-700">{l.radiacion_solar}</td>
+                      <td className="p-3 text-gray-700">{l.evapotranspiracion}</td>
+                      <td className="p-3 text-gray-700">{l.electroconductividad}</td>
+                      <td className="p-3">
+                        {l.estatus_riego
+                            ? <span className="text-green-600 font-medium">🟢 {l.flujo_riego} m³/h</span>
+                            : <span className="text-gray-400">⚪ Inactivo</span>}
+                      </td>
+                    </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                </tbody>
+              </table>
+              {lecturas.length > 20 && (
+                  <p className="text-center text-xs text-gray-400 mt-3">
+                    Mostrando 20 de {lecturas.length} registros. Exporta para ver todos.
+                  </p>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
-    </div>
   );
 }
