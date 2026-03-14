@@ -53,7 +53,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
             {/* Formulario */}
             <div className="space-y-9">
-            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6 mt-12">
+            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4 mt-12">
               <div className="space-y-3">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <div className="relative">
@@ -90,7 +90,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 </div>
               </div>
 
-              
+              <div className = "h-2" />
               <Button
                   type="submit"
                   disabled={loading}
