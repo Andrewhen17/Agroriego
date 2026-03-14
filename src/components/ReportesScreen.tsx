@@ -139,17 +139,21 @@ export function ReportesScreen() {
           </Card>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Lecturas', value: lecturas.length, color: 'text-purple-700' },
-              { label: 'Hum. Promedio', value: humProm + '%', color: 'text-green-700' },
-              { label: 'Temp. Promedio', value: tempProm + '°C', color: 'text-orange-700' },
-              { label: 'Consumo Total', value: consumoTotal + ' m³', color: 'text-blue-700' },
+              { label: 'Lecturas',       value: lecturas.length,       color: '#7c3aed' },
+              { label: 'Hum. Promedio',  value: `${humProm}%`,         color: '#00c950' },
+              { label: 'Temp. Promedio', value: `${tempProm}°C`,       color: '#f97316' },
+              { label: 'Consumo Total',  value: `${consumoTotal} m³`,  color: '#2b7fff' },
             ].map(s => (
-                <Card key={s.label} className="p-5 rounded-2xl shadow-sm">
-                  <p className="text-sm text-gray-500 mb-1">{s.label}</p>
-                  <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                </Card>
+                <div
+                    key={s.label}
+                    className="bg-white rounded-2xl p-4"
+                    style={{ border: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+                  <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                </div>
             ))}
           </div>
 
