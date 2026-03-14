@@ -37,11 +37,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md">
-          <Card className="mx-auto p-8 rounded-3xl shadow-2xl bg-white border-none">
+        <div className="w-full max-w-2xl mx-auto">
+          <Card className="w-full p-8 rounded-3xl shadow-2xl bg-white border-none">
 
             {/* Logo y título */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-16">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Droplet className="w-10 h-10 text-white" />
               </div>
@@ -49,57 +49,65 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               <p className="text-gray-500 text-sm mt-1">Gestión inteligente de cultivos</p>
             </div>
 
+            <div className="h-6" />
+
             {/* Formulario */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
+            <div className="space-y-9">
+            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6 mt-12">
+              <div className="space-y-3">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Mail className="w-5 h-5 text-gray-400" />
+                  </div>
                   <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="usuario@agroriego.mx"
-                      className="pl-10 rounded-xl"
-                      required
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="usuario@agroriego.mx"
+                    className="pl-10 rounded-xl"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="password">Contraseña</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                  </div>
                   <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-10 rounded-xl"
-                      required
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-10 rounded-xl w-full" 
+                    required
                   />
                 </div>
               </div>
 
-              {err && (
-                  <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl p-3">
-                    {err}
-                  </div>
-              )}
-
+              
               <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl font-bold text-white"
+                  className="w-full max-w-md h-12 mt-8 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-xl font-bold text-white"
               >
                 {loading ? 'Verificando...' : 'Iniciar Sesión'}
               </Button>
-            </form>
 
-            {/* Cuentas de demo */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              {err && (
+                  <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl p-3 mt-4">
+                    {err}
+                  </div>
+              )}
+            </form></div>
+
+            {/* Cuentas de demo con espacio aumentado (mt-20) */}
+            <div className="mt-20 p-4 bg-gray-100 rounded-xl max-w-md mx-auto">
               <p className="text-xs font-semibold text-gray-500 mb-2">Cuentas de demostración:</p>
               {[
                 { email: 'admin@agroriego.mx', password: 'admin123', rol: 'Admin Sistema' },
