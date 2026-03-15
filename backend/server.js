@@ -5,7 +5,7 @@ const { getPool } = require('./db'); // Importamos la conexión que arreglamos
 
 const app = express();
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000'] }));
+app.use(cors());
 app.use(express.json());
 
 // Ruta de prueba rápida
@@ -25,7 +25,7 @@ app.use('/api/telemetria', require('./routes/telemetria'));
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, async () => {
-    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`✅ Servidor corriendo en el puerto:${PORT}`);
     
     try {
         // Forzamos la conexión a SQL Server al arrancar

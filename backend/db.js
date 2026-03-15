@@ -2,16 +2,15 @@ const sql = require('mssql'); // <--- Solo UNA vez aquí arriba
 require('dotenv').config();
 
 const config = {
-    server: process.env.DB_SERVER || '127.0.0.1',
-    database: process.env.DB_DATABASE,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT) || 1433,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+    port: 1433,
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
-        connectTimeout: 5000 
-    },
+        encrypt: true, // ¡ESTO ES OBLIGATORIO PARA AZURE!
+        trustServerCertificate: false // Para producción en Azure debe ser false
+    }
 };
 
 let pool;
