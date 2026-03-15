@@ -19,6 +19,13 @@ export const api = {
             body: JSON.stringify({ email, password }),
         }).then(r => r.json()),
 
+    recuperarPassword: (email) =>
+        fetch(`${BASE}/auth/recuperar-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        }).then(r => r.json()),
+
     getPredios: () =>
         fetch(`${BASE}/predios`, { headers: headers() }).then(r => r.json()),
 
